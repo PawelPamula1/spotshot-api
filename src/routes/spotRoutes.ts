@@ -1,18 +1,23 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
   createSpot,
   getSpots,
   getSpotById,
   updateSpot,
   deleteSpot,
-} from "../controllers/spotController";
+  getCountries,
+  getCities,
+} from '../controllers/spotController';
 
 const router = Router();
 
-router.get("/", getSpots);
-router.get("/:id", getSpotById);
-router.post("/", createSpot);
-router.put("/:id", updateSpot);
-router.delete("/:id", deleteSpot);
+router.get('/countries', getCountries);
+router.get('/cities', getCities);
+
+router.get('/', getSpots);
+router.get('/:id', getSpotById);
+router.post('/', createSpot);
+router.put('/:id', updateSpot);
+router.delete('/:id', deleteSpot);
 
 export default router;

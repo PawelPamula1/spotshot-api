@@ -37,7 +37,19 @@ export const createSpot = (req: Request, res: Response, next: NextFunction) => {
 // Get all spots
 export const getSpots = (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.json(spots);
+    const { country, city } = req.query;
+
+    let filtered = spots;
+
+    if (country && country !== 'All') {
+      filtered = filtered.filter((spot) => spot.country === country);
+    }
+
+    if (city && city !== 'All') {
+      filtered = filtered.filter((spot) => spot.city === city);
+    }
+
+    res.json(filtered);
   } catch (error) {
     next(error);
   }
@@ -97,6 +109,37 @@ export const deleteSpot = (req: Request, res: Response, next: NextFunction) => {
 
     const deleted = spots.splice(index, 1)[0];
     res.json(deleted);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCountries = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const countries = Array.from(new Set(spots.map((s) => s.country)));
+    res.json(countries);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCities = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { country } = req.query;
+
+    let filteredSpots = spots;
+
+    if (country && country !== 'All') {
+      filteredSpots = filteredSpots.filter((s) => s.country === country);
+    }
+
+    const cities = Array.from(new Set(filteredSpots.map((s) => s.city)));
+
+    res.json(cities);
   } catch (error) {
     next(error);
   }
