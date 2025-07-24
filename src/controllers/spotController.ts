@@ -1,10 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import { spots, Spot } from '../models/spot';
+import { supabase } from '../lib/supabase';
 
 // Create a new spot
-export const createSpot = (req: Request, res: Response, next: NextFunction) => {
+export const createSpot = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const {
+      id,
       name,
       city,
       country,
@@ -12,132 +18,216 @@ export const createSpot = (req: Request, res: Response, next: NextFunction) => {
       description,
       latitude,
       longitude,
-      author,
+      author_id,
     } = req.body;
 
-    const newSpot: Spot = {
-      id: Date.now().toString(), // ID jako string
-      name,
-      city,
-      country,
-      image,
-      description,
-      latitude,
-      longitude,
-      author,
-    };
+    const { data, error } = await supabase
+      .from('spots')
+      .insert([
+        {
+          id,
+          name,
+          city,
+          country,
+          image,
+          description,
+          latitude,
+          longitude,
+          author_id,
+        },
+      ])
+      .select(); // zwróci stworzony rekord
 
-    spots.push(newSpot);
-    res.status(201).json(newSpot);
+    if (error) throw error;
+
+    res.status(201).json(data[0]); // zwracamy nowo dodany spot
   } catch (error) {
+    console.error('Error creating spot:', error);
     next(error);
   }
 };
 
 // Get all spots
-export const getSpots = (req: Request, res: Response, next: NextFunction) => {
+export const getSpots = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { country, city } = req.query;
 
-    let filtered = spots;
+    let query = supabase.from('spots').select('*');
 
     if (country && country !== 'All') {
-      filtered = filtered.filter((spot) => spot.country === country);
+      query = query.eq('country', country as string);
     }
 
     if (city && city !== 'All') {
-      filtered = filtered.filter((spot) => spot.city === city);
+      query = query.eq('city', city as string);
     }
 
-    res.json(filtered);
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    res.json(data);
   } catch (error) {
+    console.error('Error fetching spots:', error);
     next(error);
   }
 };
 
 // Get spot by ID
-export const getSpotById = (
+
+export const getSpotById = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
     const { id } = req.params;
-    const spot = spots.find((s) => s.id === id);
 
-    if (!spot) {
-      res.status(404).json({ message: 'Spot not found' });
-      return;
+    const { data, error } = await supabase
+      .from('spots')
+      .select('*')
+      .eq('id', id)
+      .single(); // spodziewamy się jednego wyniku
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // PGRST116 = no rows found
+        return res.status(404).json({ message: 'Spot not found' });
+      }
+      throw error;
     }
 
-    res.json(spot);
+    res.json(data);
   } catch (error) {
+    console.error('Error fetching spot by ID:', error);
     next(error);
   }
 };
 
 // Update spot
-export const updateSpot = (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const index = spots.findIndex((s) => s.id === id);
-
-    if (index === -1) {
-      res.status(404).json({ message: 'Spot not found' });
-      return;
-    }
-
-    const updatedSpot: Spot = { ...spots[index], ...req.body };
-    spots[index] = updatedSpot;
-
-    res.json(updatedSpot);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Delete spot
-export const deleteSpot = (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const index = spots.findIndex((s) => s.id === id);
-
-    if (index === -1) {
-      res.status(404).json({ message: 'Spot not found' });
-      return;
-    }
-
-    const deleted = spots.splice(index, 1)[0];
-    res.json(deleted);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getCountries = (
+export const updateSpot = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const countries = Array.from(new Set(spots.map((s) => s.country)));
+    const { id } = req.params;
+
+    // Upewnij się, że rekord o takim ID istnieje
+    const { data: existingSpot, error: fetchError } = await supabase
+      .from('spots')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        return res.status(404).json({ message: 'Spot not found' });
+      }
+      throw fetchError;
+    }
+
+    // Zaktualizuj dane
+    const { data: updatedSpot, error: updateError } = await supabase
+      .from('spots')
+      .update(req.body)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    res.json(updatedSpot);
+  } catch (error) {
+    console.error('Error updating spot:', error);
+    next(error);
+  }
+};
+
+export const deleteSpot = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { id } = req.params;
+
+    // Najpierw sprawdzamy, czy taki spot istnieje
+    const { data: existingSpot, error: fetchError } = await supabase
+      .from('spots')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        return res.status(404).json({ message: 'Spot not found' });
+      }
+      throw fetchError;
+    }
+
+    // Usuwamy rekord
+    const { data: deletedSpot, error: deleteError } = await supabase
+      .from('spots')
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+    res.json(deletedSpot);
+  } catch (error) {
+    console.error('Error deleting spot:', error);
+    next(error);
+  }
+};
+
+export const getCountries = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { data, error } = await supabase.from('spots').select('country');
+
+    if (error) throw error;
+
+    const countries = Array.from(new Set(data.map((s) => s.country))).sort();
+
     res.json(countries);
   } catch (error) {
     next(error);
   }
 };
 
-export const getCities = (req: Request, res: Response, next: NextFunction) => {
+export const getCities = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { country } = req.query;
 
-    let filteredSpots = spots;
+    let query = supabase.from('spots').select('city');
 
     if (country && country !== 'All') {
-      filteredSpots = filteredSpots.filter((s) => s.country === country);
+      query = query.eq('country', country as string);
     }
 
-    const cities = Array.from(new Set(filteredSpots.map((s) => s.city)));
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    const cities = Array.from(new Set(data.map((s) => s.city))).sort();
 
     res.json(cities);
   } catch (error) {

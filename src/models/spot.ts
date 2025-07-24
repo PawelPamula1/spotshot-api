@@ -7,10 +7,7 @@ export interface Spot {
   description: string;
   latitude: number;
   longitude: number;
-  author: {
-    userId: number;
-    authorName: string;
-  };
+  author_id: string;
 }
 
 export let spots: Spot[] = [
@@ -24,10 +21,7 @@ export let spots: Spot[] = [
     description: 'Romantic view with stairs and sunset light.',
     latitude: 48.8867,
     longitude: 2.3431,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '2',
@@ -39,10 +33,7 @@ export let spots: Spot[] = [
     description: 'Iconic NYC spot with skyline in the background.',
     latitude: 40.7061,
     longitude: -73.9969,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '3',
@@ -54,10 +45,7 @@ export let spots: Spot[] = [
     description: "The world's busiest crosswalk from above.",
     latitude: 35.6595,
     longitude: 139.7004,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '4',
@@ -69,10 +57,7 @@ export let spots: Spot[] = [
     description: 'Chuj w dupę Marcinowi.',
     latitude: 51.2465,
     longitude: 22.5684,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '5',
@@ -84,10 +69,7 @@ export let spots: Spot[] = [
     description: 'White buildings with blue domes and sea view.',
     latitude: 36.3932,
     longitude: 25.4615,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '6',
@@ -99,10 +81,7 @@ export let spots: Spot[] = [
     description: 'Tallest building in the world with panoramic city views.',
     latitude: 25.1972,
     longitude: 55.2744,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '7',
@@ -114,10 +93,7 @@ export let spots: Spot[] = [
     description: 'Classic view with Thames River in the foreground.',
     latitude: 51.5007,
     longitude: -0.1246,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '8',
@@ -129,10 +105,7 @@ export let spots: Spot[] = [
     description: 'Ancient ruins glowing in warm sunset tones.',
     latitude: 41.8902,
     longitude: 12.4922,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '9',
@@ -144,10 +117,7 @@ export let spots: Spot[] = [
     description: 'Iconic red bridge with foggy backdrop.',
     latitude: 37.8199,
     longitude: -122.4783,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '10',
@@ -159,10 +129,7 @@ export let spots: Spot[] = [
     description: 'Panoramic view from Corcovado mountain.',
     latitude: -22.9519,
     longitude: -43.2105,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '11',
@@ -174,10 +141,7 @@ export let spots: Spot[] = [
     description: 'Sweeping views over Cape Town from a flat-topped mountain.',
     latitude: -33.9628,
     longitude: 18.4098,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '12',
@@ -189,10 +153,7 @@ export let spots: Spot[] = [
     description: 'Ancient rock-carved facade glowing at golden hour.',
     latitude: 30.3285,
     longitude: 35.4444,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '13',
@@ -204,10 +165,7 @@ export let spots: Spot[] = [
     description: 'Fairy-tale village reflecting in a mountain lake.',
     latitude: 47.5615,
     longitude: 13.6481,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '14',
@@ -219,10 +177,7 @@ export let spots: Spot[] = [
     description: 'Symmetrical wonder bathed in warm morning light.',
     latitude: 27.1751,
     longitude: 78.0421,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '15',
@@ -234,10 +189,7 @@ export let spots: Spot[] = [
     description: 'Fairy-tale castle nestled in the Alps.',
     latitude: 47.5576,
     longitude: 10.7498,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '16',
@@ -249,10 +201,7 @@ export let spots: Spot[] = [
     description: 'Panoramic view of the blue-painted medina.',
     latitude: 35.1718,
     longitude: -5.2697,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '17',
@@ -264,10 +213,7 @@ export let spots: Spot[] = [
     description: 'Charming church on an island in emerald waters.',
     latitude: 46.363,
     longitude: 14.0936,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '18',
@@ -279,10 +225,7 @@ export let spots: Spot[] = [
     description: 'Colorful houses clinging to steep seaside cliffs.',
     latitude: 44.108,
     longitude: 9.7286,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '19',
@@ -294,10 +237,7 @@ export let spots: Spot[] = [
     description: 'Glass pyramid glowing at twilight.',
     latitude: 48.8606,
     longitude: 2.3376,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '20',
@@ -309,10 +249,7 @@ export let spots: Spot[] = [
     description: 'Powerful waterfall with vibrant rainbows.',
     latitude: 63.5321,
     longitude: -19.5116,
-    author: {
-      userId: 1,
-      authorName: 'Emma Dubois',
-    },
+    author_id: '123',
   },
   {
     id: '21',
@@ -324,10 +261,7 @@ export let spots: Spot[] = [
     description: 'Malownicze górskie jezioro otoczone Tatrami.',
     latitude: 49.1984,
     longitude: 20.07,
-    author: {
-      userId: 2,
-      authorName: 'Jan Kowalski',
-    },
+    author_id: '123',
   },
   {
     id: '22',
@@ -339,10 +273,7 @@ export let spots: Spot[] = [
     description: 'Bajkowy zamek z 99 wieżami – polski Hogwarts.',
     latitude: 50.4462,
     longitude: 17.7756,
-    author: {
-      userId: 3,
-      authorName: 'Anna Nowak',
-    },
+    author_id: '123',
   },
   {
     id: '23',
@@ -354,10 +285,7 @@ export let spots: Spot[] = [
     description: 'Kolorowe kamienice i urokliwe uliczki nad Motławą.',
     latitude: 54.352,
     longitude: 18.6466,
-    author: {
-      userId: 4,
-      authorName: 'Marek Wiśniewski',
-    },
+    author_id: '123',
   },
   {
     id: '24',
@@ -369,9 +297,6 @@ export let spots: Spot[] = [
     description: 'Spokojne jezioro z pięknymi zachodami słońca.',
     latitude: 49.3827,
     longitude: 22.4678,
-    author: {
-      userId: 5,
-      authorName: 'Karolina Zielińska',
-    },
+    author_id: '123',
   },
 ];
