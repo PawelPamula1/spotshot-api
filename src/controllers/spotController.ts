@@ -19,6 +19,7 @@ export const createSpot = async (
       latitude,
       longitude,
       author_id,
+      photo_tips,
     } = req.body;
 
     const { data, error } = await supabase
@@ -34,6 +35,7 @@ export const createSpot = async (
           latitude,
           longitude,
           author_id,
+          photo_tips,
         },
       ])
       .select(); // zwróci stworzony rekord
