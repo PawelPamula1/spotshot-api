@@ -9,9 +9,6 @@ import {
 
 const router = Router();
 
-// GET /api/favourites/:userId
-router.get('/:userId', getFavoritesForUser);
-
 // POST /api/favourites
 router.post('/', addFavorite); // body: { userId, spotId }
 
@@ -23,5 +20,8 @@ router.get('/count/:spotId', getFavoriteCountForSpot);
 
 // GET /api/favourites/check?userId=xxx&spotId=yyy
 router.get('/check', checkIfUserFavoritedSpot);
+
+// GET /api/favourites/:userId
+router.get('/:userId', getFavoritesForUser);
 
 export default router;

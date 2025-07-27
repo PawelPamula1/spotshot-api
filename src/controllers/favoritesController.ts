@@ -109,8 +109,8 @@ export const checkIfUserFavoritedSpot = async (
     const { data, error } = await supabase
       .from('favorites')
       .select('*')
-      .eq('user_id', userId.toString())
-      .eq('spot_id', spotId.toString())
+      .eq('user_id', userId)
+      .eq('spot_id', spotId)
       .single();
 
     if (error && error.code !== 'PGRST116') throw error;
