@@ -236,3 +236,25 @@ export const getCities = async (
     next(error);
   }
 };
+
+export const getUserSpotsCount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { userId } = req.params;
+
+  try {
+    const { count, error } = await supabase
+      .from('spots')
+      .select('*', { count: 'exact', head: true })
+      .eq('author_id', userId);
+
+    if (error) throw error;
+
+    res.json({ count });
+  } catch (error) {
+    console.error('Error counting user spots:', error);
+    next(error);
+  }
+};
