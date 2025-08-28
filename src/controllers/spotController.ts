@@ -36,6 +36,7 @@ export const createSpot = async (
           longitude,
           author_id,
           photo_tips,
+          accepted: false,
         },
       ])
       .select(); // zwróci stworzony rekord
@@ -58,7 +59,7 @@ export const getSpots = async (
   try {
     const { country, city } = req.query;
 
-    let query = supabase.from('spots').select('*');
+    let query = supabase.from('spots').select('*').eq('accepted', true);
 
     if (country && country !== 'All') {
       query = query.eq('country', country as string);
