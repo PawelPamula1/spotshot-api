@@ -99,3 +99,47 @@ export const rejectSpot = async (
     next(e);
   }
 };
+export const reportSpot = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { spotId, reporterId, reason } = req.body ?? {};
+
+    if (!spotId || !reporterId || !reason) {
+      return res
+        .status(400)
+        .json({ message: 'spotId, reporterId i reason są wymagane' });
+    }
+
+    const { data: spot, error: spotErr } = await supabase
+      .from('spots')
+      .select('id')
+      .eq('id', spotId)
+      .single();
+
+    if (spotErr || !spot) {
+      return res.status(404).json({ message: 'Spot nie istnieje' });
+    }
+
+    const { data, error } = await supabase
+      .from('spot_reports')
+      .insert([
+        {
+          spot_id: spotId,
+          reporter_id: reporterId,
+          reason: String(reason).trim(), // dowolny tekst
+        },
+      ])
+      .select('id')
+      .single();
+
+    if (error) throw error;
+
+    return res.status(201).json({ id: data.id });
+  } catch (err) {
+    console.error('Error reportSpot:', err);
+    next(err);
+  }
+};
