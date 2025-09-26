@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { spots, Spot } from '../models/spot';
 import { supabase } from '../lib/supabase';
+import { sendError } from '../utils';
 
 // Create a new spot
 export const createSpot = async (
@@ -22,6 +23,11 @@ export const createSpot = async (
       photo_tips,
     } = req.body;
 
+    // Basic validation
+    if (!name || !city || !country || !image || !author_id) {
+      return sendError(res, 400, 'Missing required fields.');
+    }
+
     const { data, error } = await supabase
       .from('spots')
       .insert([
@@ -39,14 +45,21 @@ export const createSpot = async (
           accepted: false,
         },
       ])
-      .select(); // zwróci stworzony rekord
+      .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error creating spot:', error);
+      return sendError(
+        res,
+        500,
+        'Failed to create spot. Please try again later.',
+      );
+    }
 
-    res.status(201).json(data[0]); // zwracamy nowo dodany spot
+    res.status(201).json(data[0]);
   } catch (error) {
     console.error('Error creating spot:', error);
-    next(error);
+    sendError(res, 500, 'Unexpected error. Please try again later.');
   }
 };
 
@@ -71,17 +84,19 @@ export const getSpots = async (
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching spots:', error);
+      return sendError(res, 500, 'Failed to fetch spots.');
+    }
 
     res.json(data);
   } catch (error) {
     console.error('Error fetching spots:', error);
-    next(error);
+    sendError(res, 500, 'Unexpected error. Please try again later.');
   }
 };
 
 // Get spot by ID
-
 export const getSpotById = async (
   req: Request,
   res: Response,
@@ -94,20 +109,20 @@ export const getSpotById = async (
       .from('spots')
       .select('*')
       .eq('id', id)
-      .single(); // spodziewamy się jednego wyniku
+      .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
-        // PGRST116 = no rows found
-        return res.status(404).json({ message: 'Spot not found' });
+        return sendError(res, 404, 'Spot not found');
       }
-      throw error;
+      console.error('Error fetching spot by ID:', error);
+      return sendError(res, 500, 'Failed to fetch spot.');
     }
 
     res.json(data);
   } catch (error) {
     console.error('Error fetching spot by ID:', error);
-    next(error);
+    sendError(res, 500, 'Unexpected error. Please try again later.');
   }
 };
 
@@ -120,7 +135,6 @@ export const updateSpot = async (
   try {
     const { id } = req.params;
 
-    // Upewnij się, że rekord o takim ID istnieje
     const { data: existingSpot, error: fetchError } = await supabase
       .from('spots')
       .select('*')
@@ -129,12 +143,12 @@ export const updateSpot = async (
 
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
-        return res.status(404).json({ message: 'Spot not found' });
+        return sendError(res, 404, 'Spot not found');
       }
-      throw fetchError;
+      console.error('Error fetching spot for update:', fetchError);
+      return sendError(res, 500, 'Failed to fetch spot for update.');
     }
 
-    // Zaktualizuj dane
     const { data: updatedSpot, error: updateError } = await supabase
       .from('spots')
       .update(req.body)
@@ -143,13 +157,14 @@ export const updateSpot = async (
       .single();
 
     if (updateError) {
-      throw updateError;
+      console.error('Error updating spot:', updateError);
+      return sendError(res, 500, 'Failed to update spot.');
     }
 
     res.json(updatedSpot);
   } catch (error) {
     console.error('Error updating spot:', error);
-    next(error);
+    sendError(res, 500, 'Unexpected error. Please try again later.');
   }
 };
 
@@ -161,7 +176,6 @@ export const deleteSpot = async (
   try {
     const { id } = req.params;
 
-    // Najpierw sprawdzamy, czy taki spot istnieje
     const { data: existingSpot, error: fetchError } = await supabase
       .from('spots')
       .select('*')
@@ -170,12 +184,12 @@ export const deleteSpot = async (
 
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
-        return res.status(404).json({ message: 'Spot not found' });
+        return sendError(res, 404, 'Spot not found');
       }
-      throw fetchError;
+      console.error('Error fetching spot for deletion:', fetchError);
+      return sendError(res, 500, 'Failed to fetch spot for deletion.');
     }
 
-    // Usuwamy rekord
     const { data: deletedSpot, error: deleteError } = await supabase
       .from('spots')
       .delete()
@@ -184,13 +198,14 @@ export const deleteSpot = async (
       .single();
 
     if (deleteError) {
-      throw deleteError;
+      console.error('Error deleting spot:', deleteError);
+      return sendError(res, 500, 'Failed to delete spot.');
     }
 
-    res.json(deletedSpot);
+    res.json({ message: 'Spot deleted successfully', spot: deletedSpot });
   } catch (error) {
     console.error('Error deleting spot:', error);
-    next(error);
+    sendError(res, 500, 'Unexpected error. Please try again later.');
   }
 };
 
@@ -202,13 +217,17 @@ export const getCountries = async (
   try {
     const { data, error } = await supabase.from('spots').select('country');
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching countries:', error);
+      return sendError(res, 500, 'Failed to fetch countries.');
+    }
 
     const countries = Array.from(new Set(data.map((s) => s.country))).sort();
 
     res.json(countries);
   } catch (error) {
-    next(error);
+    console.error('Error fetching countries:', error);
+    sendError(res, 500, 'Unexpected error. Please try again later.');
   }
 };
 
@@ -228,13 +247,17 @@ export const getCities = async (
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching cities:', error);
+      return sendError(res, 500, 'Failed to fetch cities.');
+    }
 
     const cities = Array.from(new Set(data.map((s) => s.city))).sort();
 
     res.json(cities);
   } catch (error) {
-    next(error);
+    console.error('Error fetching cities:', error);
+    sendError(res, 500, 'Unexpected error. Please try again later.');
   }
 };
 
@@ -251,11 +274,14 @@ export const getUserSpotsCount = async (
       .select('*', { count: 'exact', head: true })
       .eq('author_id', userId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error counting user spots:', error);
+      return sendError(res, 500, 'Failed to count user spots.');
+    }
 
     res.json({ count });
   } catch (error) {
     console.error('Error counting user spots:', error);
-    next(error);
+    sendError(res, 500, 'Unexpected error. Please try again later.');
   }
 };
