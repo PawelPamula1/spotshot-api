@@ -11,7 +11,6 @@ export const createSpot = async (
 ) => {
   try {
     const {
-      id,
       name,
       city,
       country,
@@ -24,7 +23,7 @@ export const createSpot = async (
     } = req.body;
 
     // Basic validation
-    if (!name || !city || !country || !image || !author_id) {
+    if (!name || !country || !image || !author_id) {
       return sendError(res, 400, 'Missing required fields.');
     }
 
@@ -32,7 +31,6 @@ export const createSpot = async (
       .from('spots')
       .insert([
         {
-          id,
           name,
           city,
           country,
