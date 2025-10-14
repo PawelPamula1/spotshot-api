@@ -20,6 +20,14 @@ app.use('/api/favourites', favouritesRoutes);
 app.use('/api/moderation', moderationRoutes);
 app.use('/api/cloudinary', cloudinaryRoutes);
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use(errorHandler);
 
 export default app;
