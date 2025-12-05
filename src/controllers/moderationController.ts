@@ -143,3 +143,103 @@ export const reportSpot = async (
     next(err);
   }
 };
+
+export const getSpotReports = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { limit = '50' } = req.query as { limit?: string };
+
+    const { data, error } = await supabase
+      .from('spot_reports')
+      .select(
+        `
+        id,
+        reason,
+        created_at,
+        spot_id,
+        reporter_id,
+        spot:spots (
+          id,
+          name,
+          city,
+          country,
+          image,
+          description,
+          latitude,
+          longitude,
+          photo_tips,
+          author_id,
+          accepted,
+          created_at,
+          author:profiles (
+            id,
+            username,
+            avatar_url
+          )
+        ),
+        reporter:profiles!spot_reports_reporter_id_fkey (
+          id,
+          username,
+          avatar_url
+        )
+      `,
+      )
+      .order('created_at', { ascending: false })
+      .limit(Math.min(Number(limit || 50), 200));
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (e) {
+    console.error('Error in getSpotReports:', e);
+    next(e);
+  }
+};
+
+export const dismissReport = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('spot_reports')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({ success: true, id });
+  } catch (e) {
+    console.error('Error in dismissReport:', e);
+    next(e);
+  }
+};
+
+export const deleteReportedSpot = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { reportId, spotId } = req.params;
+
+    // Delete the spot (this will cascade delete reports due to FK)
+    const { error: spotError } = await supabase
+      .from('spots')
+      .delete()
+      .eq('id', spotId);
+
+    if (spotError) throw spotError;
+
+    res.json({ success: true, reportId, spotId });
+  } catch (e) {
+    console.error('Error in deleteReportedSpot:', e);
+    next(e);
+  }
+};
