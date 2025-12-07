@@ -143,9 +143,13 @@ Body: { name, city, country, image, description, latitude, longitude, author_id,
 Response: Spot
 
 PUT    /api/spots/spot/:id
-Description: Update existing spot
-Body: Partial<Spot>
+Description: Update existing spot (with authorization check)
+Body: { user_id, name?, city?, country?, description?, photo_tips?, image? }
+Authorization: Only spot author can edit (validates author_id === user_id)
+Protected Fields: latitude, longitude, author_id (cannot be changed)
+Re-moderation: Sets accepted=false after edit
 Response: Spot
+Errors: 400 (user_id required), 403 (unauthorized), 404 (not found)
 
 DELETE /api/spots/:id
 Description: Delete spot
@@ -162,6 +166,11 @@ Response: { city: string }[]
 GET    /api/spots/count/:userId
 Description: Get count of spots created by user
 Response: { count: number }
+
+GET    /api/spots/user/:userId
+Description: Get all spots created by user (includes pending spots)
+Response: Spot[]
+Query Logic: Filter by author_id, ordered by created_at DESC
 ```
 
 ### Users
@@ -283,8 +292,9 @@ Response: { signature, timestamp, cloudName, apiKey, uploadPreset }
 
 ### Current Implementation
 - **No authentication middleware** in the API
-- Endpoints trust `user_id` from request body
-- **SECURITY CONCERN:** Should validate JWT and extract user_id from token
+- Most endpoints trust `user_id` from request body
+- **UPDATE endpoint has authorization** - Validates user owns the spot before allowing edits
+- **SECURITY CONCERN:** Should add JWT verification middleware for all protected endpoints
 
 ### User Deletion
 ```typescript
@@ -581,11 +591,18 @@ describe("Spots API", () => {
 ## Security Considerations
 
 ### Current Vulnerabilities
-1. **No authentication middleware** - Endpoints trust user_id from request body
+1. **Limited authentication** - Only UPDATE endpoint checks authorization
 2. **CORS allows all origins** - Should be restricted in production
 3. **No rate limiting** - Vulnerable to abuse
 4. **No input validation** - Potential for injection attacks
 5. **Service role key** bypasses Row Level Security (RLS)
+
+### Security Improvements (Recent)
+1. **✅ Spot Update Authorization** - `updateSpot` endpoint validates user ownership
+   - Checks `spot.author_id === user_id` before allowing edits
+   - Returns 403 Forbidden if unauthorized
+   - Protected fields (location, author_id) cannot be changed
+   - Re-moderation required after edit (`accepted: false`)
 
 ### Recommendations
 1. **Add JWT verification middleware**

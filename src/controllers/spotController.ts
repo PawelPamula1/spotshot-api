@@ -132,6 +132,12 @@ export const updateSpot = async (
 ) => {
   try {
     const { id } = req.params;
+    const { user_id } = req.body;
+
+    // Validate user_id is provided
+    if (!user_id) {
+      return sendError(res, 400, 'User ID is required');
+    }
 
     const { data: existingSpot, error: fetchError } = await supabase
       .from('spots')
@@ -147,9 +153,34 @@ export const updateSpot = async (
       return sendError(res, 500, 'Failed to fetch spot for update.');
     }
 
+    // Authorization check - only spot author can edit
+    if (existingSpot.author_id !== user_id) {
+      return sendError(
+        res,
+        403,
+        'You are not authorized to edit this spot. Only the author can make changes.',
+      );
+    }
+
+    // Prepare update data - remove protected fields
+    const {
+      user_id: _,
+      author_id,
+      latitude,
+      longitude,
+      id: spotId,
+      ...updateData
+    } = req.body;
+
+    // Reset to pending moderation when spot is edited
+    const finalUpdateData = {
+      ...updateData,
+      accepted: false,
+    };
+
     const { data: updatedSpot, error: updateError } = await supabase
       .from('spots')
-      .update(req.body)
+      .update(finalUpdateData)
       .eq('id', id)
       .select()
       .single();
@@ -280,6 +311,32 @@ export const getUserSpotsCount = async (
     res.json({ count });
   } catch (error) {
     console.error('Error counting user spots:', error);
+    sendError(res, 500, 'Unexpected error. Please try again later.');
+  }
+};
+
+export const getUserSpots = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { userId } = req.params;
+
+    const { data, error } = await supabase
+      .from('spots')
+      .select('*')
+      .eq('author_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user spots:', error);
+      return sendError(res, 500, 'Failed to fetch user spots.');
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching user spots:', error);
     sendError(res, 500, 'Unexpected error. Please try again later.');
   }
 };

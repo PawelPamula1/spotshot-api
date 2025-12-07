@@ -8,6 +8,7 @@ import {
   getCountries,
   getCities,
   getUserSpotsCount,
+  getUserSpots,
 } from '../controllers/spotController';
 
 const router = Router();
@@ -15,6 +16,7 @@ const router = Router();
 router.get('/countries', getCountries);
 router.get('/cities', getCities);
 router.get('/count/:userId', getUserSpotsCount);
+router.get('/user/:userId', getUserSpots);
 
 router.get('/', getSpots);
 router.get('/spot/:id', getSpotById);
